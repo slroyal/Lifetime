@@ -21,13 +21,32 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci --only=production
-        # package-lock.json තියෙන නිසා දැන් error එක එන්නේ නෑ
 
-      - name: Run Bot (6 Hours)
+      - name: Show Files (Debug)
         run: |
-          echo "Bot started at $(date)"
-          npm start &          # ඔයාගේ start script එක මෙතන (package.json එකේ "start" තියෙනවා නේද?)
-          sleep 345m           # 5h 45m run වෙලා ඊළඟ schedule එකට overlap නැතුව නවත්තනවා
+          echo "=== Files in repo ==="
+          ls -la
+          echo "=== package.json content ==="
+          cat package.json
 
-      - name: Cycle Ended
-        run: echo "Bot stopped – will auto restart in next schedule"
+      - name: Run Bot with Full Logs
+        run: |
+          echo "Bot starting at $(date)"
+          echo "Current directory: $(pwd)"
+          
+          # ඔයාගේ main file එක මොකක්ද කියලා මෙතන දාන්න (උදා: index.js, bot.js, main.js)
+          node index.js &     # <<< මෙතන ඔයාගේ file name එක දාන්න !!!
+          # හෝ node bot.js &
+          # හෝ node main.js &
+          
+          BOT_PID=$!
+          echo "Bot running with PID: $BOT_PID"
+          
+          # 5h 45m බලාගෙන ඉන්න (ඊළඟ schedule එකට overlap නැතුව)
+          sleep 345m
+          
+          echo "Killing bot for next cycle..."
+          kill $BOT_PID || true
+
+      - name: Cycle Completed
+        run: echo "6-hour cycle done – will auto restart soon"

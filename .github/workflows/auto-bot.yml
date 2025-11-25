@@ -11,28 +11,23 @@ jobs:
     timeout-minutes: 350
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'    # npm cache කරලා fast කරනවා
 
       - name: Install Dependencies
-        run: |
-          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
-            npm ci
-          else
-            npm install --production
-          fi
+        run: npm ci --only=production
+        # package-lock.json තියෙන නිසා දැන් error එක එන්නේ නෑ
 
-      - name: Start Bot
+      - name: Run Bot (6 Hours)
         run: |
-          echo "Bot starting at $(date)"
-          npm start &          # ඔයාගේ start script එක මෙතන
-          sleep 345m           # 5h 45m run වෙලා ඊළඟ schedule එකට කලින් නවත්තනවා
+          echo "Bot started at $(date)"
+          npm start &          # ඔයාගේ start script එක මෙතන (package.json එකේ "start" තියෙනවා නේද?)
+          sleep 345m           # 5h 45m run වෙලා ඊළඟ schedule එකට overlap නැතුව නවත්තනවා
 
-      - name: Bot Cycle Ended
-        run: echo "Cycle completed – will restart in next schedule"
+      - name: Cycle Ended
+        run: echo "Bot stopped – will auto restart in next schedule"
